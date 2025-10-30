@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'users',
+    'books',
 ]
 
 MIDDLEWARE = [
@@ -80,7 +81,10 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 10,
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
 }
 
 WSGI_APPLICATION = 'core.wsgi.application'
