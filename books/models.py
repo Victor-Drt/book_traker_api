@@ -16,3 +16,9 @@ class Books(models.Model):
     def finish_book(self):
         self.is_finished = not self.is_finished
         self.save()
+
+
+class Progress(models.Model):
+    book = models.ForeignKey(Books, on_delete=models.CASCADE)
+    date = models.DateTimeField()
+    pages_read = models.IntegerField(default=0)
