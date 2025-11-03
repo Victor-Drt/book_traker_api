@@ -13,4 +13,5 @@ class BookSerializer(serializers.ModelSerializer):
 class ProgressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Progress
-        fields = '__all__'
+        fields = ['book', 'date', 'pages_read']
+        read_only_fields = ['book']
