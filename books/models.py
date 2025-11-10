@@ -12,11 +12,17 @@ class Books(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     is_finished = models.BooleanField(default=False)
+    percent_finished = models.FloatField(default=0.0)
+    total_pages_read = models.IntegerField(default=0)
 
     def finish_book(self):
         self.is_finished = not self.is_finished
         self.save()
 
+    def calculate_progress(self, pages_read):
+        self.total_pages_read += pages_read
+        self.percent_finished = self.total_pages_read * 100 / self.total_pages
+        self.save()
 
 class Progress(models.Model):
     book = models.ForeignKey(Books, on_delete=models.CASCADE)
