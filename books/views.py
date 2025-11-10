@@ -25,8 +25,14 @@ class BookViewSet(viewsets.ModelViewSet):
             serializer = ProgressSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save(book=book)
+            book.calculate_progress(serializer.data.get('pages_read'))
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        progress = Progress.objects.filter(book=book.id)
-        serializer = ProgressSerializer(progress, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        progress = {
+            "avg_pages_by_day": book.total_pages_read,
+            "percent_finished": book.percent_finished
+        }
+
+        # progress = Progress.objects.filter(book=book.id)
+        # serializer = ProgressSerializer(progress, many=True)
+        return Response(progress, status=status.HTTP_200_OK)

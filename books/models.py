@@ -16,7 +16,8 @@ class Books(models.Model):
     total_pages_read = models.IntegerField(default=0)
 
     def finish_book(self):
-        self.is_finished = not self.is_finished
+        if self.percent_finished >= 100:
+            self.is_finished = True
         self.save()
 
     def calculate_progress(self, pages_read):
