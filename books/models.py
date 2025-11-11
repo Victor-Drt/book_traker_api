@@ -25,6 +25,7 @@ class Books(models.Model):
         self.percent_finished = self.total_pages_read * 100 / self.total_pages
         self.save()
 
+
 class Progress(models.Model):
     book = models.ForeignKey(Books, on_delete=models.CASCADE)
     date = models.DateTimeField()

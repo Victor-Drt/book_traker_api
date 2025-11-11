@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from django.db.models.functions import TruncWeek, TruncMonth
 
 from rest_framework import viewsets, status
@@ -38,6 +38,42 @@ class BookViewSet(viewsets.ModelViewSet):
         # progress = Progress.objects.filter(book=book.id)
         # serializer = ProgressSerializer(progress, many=True)
         return Response(progress, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'])
+    def recommendations(self, request):
+        user = request.user
+
+        category_counts = (
+            Books.objects.filter(owner=user, is_finished=True)
+            .values('category')
+            .annotate(total=Count('id'))
+            .order_by('-total')
+        )
+
+        if not category_counts.exists():
+            return Response({"detail": "Nenhuma leitura concluída ainda."}, status=200)
+
+        top_category = next(
+            (c['category'] for c in category_counts if c['total'] >= 3),
+            None
+        )
+
+        if not top_category:
+            return Response(
+                {"detail": "Você ainda não leu 3 livros de nenhuma categoria."},
+                status=200
+            )
+
+        # Busca livros da mesma categoria, de outros usuários
+        recommended_books = Books.objects.filter(
+            category=top_category
+        ).exclude(owner=user)[:10]  # limita a 10 resultados
+
+        serializer = BookSerializer(recommended_books, many=True)
+        return Response({
+            "category": top_category,
+            "recommendations": serializer.data
+        })
 
 
 class StatsViewSet(viewsets.ViewSet):
