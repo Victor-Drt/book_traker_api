@@ -17,7 +17,7 @@ class BookViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Books.objects.filter(owner=self.request.user)
+        return Books.objects.filter(owner=self.request.user).order_by('-created_at')
 
     @action(detail=True, methods=['post', 'get'])
     def progress(self, request, pk=None):
