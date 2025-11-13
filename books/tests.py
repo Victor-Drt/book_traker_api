@@ -49,3 +49,23 @@ class BookViewSetTests(APITestCase):
     def test_get_progress(self):
         response = self.client.get(self.url_detail(self.book.id) + "progress/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class StatsViewSetTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="victor", password="123456")
+        self.client.force_authenticate(user=self.user)
+
+        self.url_list = reverse("stats-list")
+
+        self.book = Books.objects.create(
+            title="Django 101",
+            author="Novo Autor",
+            category="Categoria",
+            total_pages=100,
+            owner=self.user,
+        )
+
+    def test_list_stats(self):
+        response = self.client.get(self.url_list)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
