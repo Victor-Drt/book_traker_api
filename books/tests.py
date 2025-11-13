@@ -35,7 +35,17 @@ class BookViewSetTests(APITestCase):
             "author": "Autor Teste",
             "category": "Categoria X",
             "total_pages": 150,
-            "owner": self.user.id
+            "owner": self.user.id,
         }
         response = self.client.post(self.url_list, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_progress(self):
+        data = {"date": "2025-11-10", "pages_read": 55}
+
+        response = self.client.post(self.url_detail(self.book.id) + "progress/", data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_get_progress(self):
+        response = self.client.get(self.url_detail(self.book.id) + "progress/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
