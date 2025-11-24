@@ -15,3 +15,8 @@ class ProgressSerializer(serializers.ModelSerializer):
         model = Progress
         fields = ['book', 'date', 'pages_read']
         read_only_fields = ['book']
+
+
+class RelatorioSerializer(serializers.Serializer):
+    a = serializers.IntegerField()
+    b = serializers.IntegerField()

@@ -3,12 +3,15 @@ from django.db.models import Sum, Count
 from django.db.models.functions import TruncWeek, TruncMonth
 
 from rest_framework import viewsets, status
+from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from .serializers import BookSerializer, ProgressSerializer
+from .serializers import BookSerializer, ProgressSerializer, RelatorioSerializer
 from .models import Books, Progress
+
+from tasks import generate_user_report
 
 
 # Create your views here.
@@ -116,3 +119,11 @@ class StatsViewSet(viewsets.ViewSet):
         }
 
         return Response(data, status=status.HTTP_200_OK)
+
+
+class ExportHistoryAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        generate_user_report.delay(request.user.id)
+        return Response({"message": "Relatório sendo gerado. Você receberá um email em breve."})
