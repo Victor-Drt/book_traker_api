@@ -39,8 +39,18 @@ ALLOWED_HOSTS = []
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')
 EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_PORT = os.getenv('EMAIL_PORT')
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS')
-EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL')
+
+# Converter strings para booleanos e garantir que apenas um seja True
+email_use_tls = os.getenv('EMAIL_USE_TLS', 'False').lower() in ('true', '1', 'yes')
+email_use_ssl = os.getenv('EMAIL_USE_SSL', 'False').lower() in ('true', '1', 'yes')
+
+# Se ambos estiverem True, priorizar SSL e desabilitar TLS
+if email_use_tls and email_use_ssl:
+    email_use_tls = False
+
+EMAIL_USE_TLS = email_use_tls
+EMAIL_USE_SSL = email_use_ssl
+
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
