@@ -1,16 +1,36 @@
 from rest_framework import serializers
 
-from .models import Books
-from .models import Progress
+from .models import Books, Progress
 
 
 class BookSerializer(serializers.ModelSerializer):
+    """
+    Serializer para o modelo Books.
+    
+    Serializa e deserializa dados de livros, incluindo todos os campos
+    do modelo. Utilizado para operações CRUD via API REST.
+    
+    Fields:
+        Todos os campos do modelo Books são incluídos.
+    """
     class Meta:
         model = Books
         fields = '__all__'
 
 
 class ProgressSerializer(serializers.ModelSerializer):
+    """
+    Serializer para o modelo Progress.
+    
+    Serializa e deserializa dados de progresso de leitura.
+    O campo 'book' é somente leitura e é definido automaticamente
+    pelo contexto da requisição.
+    
+    Fields:
+        book: ID do livro (read-only).
+        date: Data da sessão de leitura.
+        pages_read: Número de páginas lidas.
+    """
     class Meta:
         model = Progress
         fields = ['book', 'date', 'pages_read']
@@ -18,5 +38,15 @@ class ProgressSerializer(serializers.ModelSerializer):
 
 
 class RelatorioSerializer(serializers.Serializer):
+    """
+    Serializer para dados de relatório.
+    
+    Serializer genérico para validação de dados de relatório.
+    Atualmente utilizado para testes ou funcionalidades futuras.
+    
+    Fields:
+        a (int): Campo numérico A.
+        b (int): Campo numérico B.
+    """
     a = serializers.IntegerField()
     b = serializers.IntegerField()

@@ -1,24 +1,37 @@
 from django.contrib.auth.models import User
 from django.db.models import QuerySet
+from typing import Dict, List, Optional
 
 from .repository import BookRepository, ProgressRepository
 from .models import Books, Progress
 
 
 class BookService:
-    """Service para lógica de negócio relacionada a Books."""
+    """
+    Service para lógica de negócio relacionada a Books.
+    
+    Contém a lógica de negócio para operações com livros, incluindo
+    cálculo de progresso, recomendações e informações de leitura.
+    """
     
     def __init__(self):
+        """Inicializa o service com as dependências necessárias."""
         self.book_repo = BookRepository()
         self.progress_repo = ProgressRepository()
     
-    def calculate_book_progress(self, book: Books, pages_read: int):
+    def calculate_book_progress(self, book: Books, pages_read: int) -> Books:
         """
         Calcula e atualiza o progresso de um livro.
         
+        Adiciona as páginas lidas ao total, recalcula o percentual
+        de conclusão e marca como concluído se atingir 100%.
+        
         Args:
-            book: Instância do livro
-            pages_read: Páginas lidas a serem adicionadas
+            book (Books): Instância do livro a ser atualizado.
+            pages_read (int): Páginas lidas a serem adicionadas.
+            
+        Returns:
+            Books: Instância do livro atualizada.
         """
         book.total_pages_read += pages_read
         if book.total_pages > 0:
@@ -33,27 +46,39 @@ class BookService:
         book.save()
         return book
     
-    def get_book_progress_info(self, book: Books):
+    def get_book_progress_info(self, book: Books) -> Dict[str, float]:
         """
         Retorna informações de progresso formatadas de um livro.
         
+        Args:
+            book (Books): Instância do livro.
+            
         Returns:
-            dict: Dicionário com informações de progresso
+            dict: Dicionário contendo:
+                - avg_pages_by_day (int): Total de páginas lidas.
+                - percent_finished (float): Percentual de conclusão.
         """
         return {
             "avg_pages_by_day": book.total_pages_read,
             "percent_finished": book.percent_finished
         }
     
-    def get_recommendations(self, user: User):
+    def get_recommendations(self, user: User) -> Dict:
         """
         Obtém recomendações de livros baseadas nas categorias mais lidas.
         
+        Analisa as categorias dos livros concluídos pelo usuário e
+        retorna recomendações de livros da categoria mais lida (com pelo
+        menos 3 livros), excluindo livros do próprio usuário.
+        
         Args:
-            user: Usuário para o qual gerar recomendações
+            user (User): Usuário para o qual gerar recomendações.
             
         Returns:
-            dict: Dicionário com categoria e lista de recomendações
+            dict: Dicionário contendo:
+                - detail (str, optional): Mensagem de erro se não houver dados.
+                - category (str, optional): Categoria recomendada.
+                - recommendations (list): Lista de livros recomendados.
         """
         category_counts = self.book_repo.get_category_counts(user)
         
@@ -91,21 +116,33 @@ class BookService:
 
 
 class StatsService:
-    """Service para lógica de negócio relacionada a estatísticas."""
+    """
+    Service para lógica de negócio relacionada a estatísticas.
+    
+    Contém a lógica para cálculo e formatação de estatísticas de leitura
+    do usuário, incluindo livros lidos, páginas por semana e por mês.
+    """
     
     def __init__(self):
+        """Inicializa o service com as dependências necessárias."""
         self.book_repo = BookRepository()
         self.progress_repo = ProgressRepository()
     
-    def get_user_stats(self, user: User):
+    def get_user_stats(self, user: User) -> Dict:
         """
         Retorna estatísticas completas do usuário.
         
+        Calcula e formata estatísticas de leitura incluindo número de
+        livros concluídos, páginas lidas por semana e por mês.
+        
         Args:
-            user: Usuário para o qual gerar estatísticas
+            user (User): Usuário para o qual gerar estatísticas.
             
         Returns:
-            dict: Dicionário com estatísticas formatadas
+            dict: Dicionário contendo:
+                - books_read (int): Número de livros concluídos.
+                - pages_by_week (dict): Páginas lidas por semana (data: total).
+                - pages_by_month (dict): Páginas lidas por mês (YYYY-MM: total).
         """
         # Livros concluídos
         finished_books = self.book_repo.get_finished_books(user)
@@ -133,23 +170,33 @@ class StatsService:
 
 
 class ProgressService:
-    """Service para lógica de negócio relacionada a Progress."""
+    """
+    Service para lógica de negócio relacionada a Progress.
+    
+    Contém a lógica para criação e gerenciamento de registros de progresso,
+    incluindo atualização automática do progresso do livro relacionado.
+    """
     
     def __init__(self):
+        """Inicializa o service com as dependências necessárias."""
         self.progress_repo = ProgressRepository()
         self.book_service = BookService()
     
-    def create_progress(self, book: Books, date, pages_read: int):
+    def create_progress(self, book: Books, date, pages_read: int) -> Progress:
         """
         Cria um novo registro de progresso e atualiza o livro.
         
+        Cria um registro de progresso e automaticamente atualiza o
+        progresso do livro relacionado, recalculando percentuais e
+        status de conclusão.
+        
         Args:
-            book: Instância do livro
-            date: Data do progresso
-            pages_read: Páginas lidas
+            book (Books): Instância do livro relacionado.
+            date: Data e hora da sessão de leitura.
+            pages_read (int): Número de páginas lidas.
             
         Returns:
-            Progress: Instância criada
+            Progress: Instância do progresso criado.
         """
         progress = self.progress_repo.create_progress(book, date, pages_read)
         self.book_service.calculate_book_progress(book, pages_read)
