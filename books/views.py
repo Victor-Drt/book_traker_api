@@ -34,7 +34,7 @@ class BookViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         progress = {
-            "avg_pages_by_day": book.total_pages_read, # ajustar
+            "avg_pages_by_day": book.total_pages_read,  # ajustar
             "percent_finished": book.percent_finished
         }
 
@@ -44,6 +44,8 @@ class BookViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def recommendations(self, request):
+        service = self.service_class()
+        
         user = request.user
 
         category_counts = (
@@ -125,5 +127,28 @@ class ExportHistoryAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        generate_user_report.delay(request.user.id)
-        return Response({"message": "Relatório sendo gerado. Você receberá um email em breve."})
+        """
+        Inicia a geração de relatório PDF em background.
+        O relatório será enviado por email quando estiver pronto.
+        """
+        user = request.user
+        
+        # Validar se o usuário possui email cadastrado
+        if not user.email:
+            return Response(
+                {"error": "É necessário ter um email cadastrado para receber o relatório."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            # Disparar task assíncrona
+            generate_user_report.delay(user.id)
+            return Response(
+                {"message": "Relatório sendo gerado. Você receberá um email em breve."},
+                status=status.HTTP_202_ACCEPTED
+            )
+        except Exception as e:
+            return Response(
+                {"error": "Erro ao iniciar geração do relatório. Tente novamente mais tarde."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
