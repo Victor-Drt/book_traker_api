@@ -55,11 +55,11 @@ class BookService:
             
         Returns:
             dict: Dicionário contendo:
-                - avg_pages_by_day (int): Total de páginas lidas.
+                - total_pages_by_day (int): Total de páginas lidas.
                 - percent_finished (float): Percentual de conclusão.
         """
         return {
-            "avg_pages_by_day": book.total_pages_read,
+            "total_pages_by_day": book.total_pages_read,
             "percent_finished": book.percent_finished
         }
     
