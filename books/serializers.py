@@ -36,17 +36,3 @@ class ProgressSerializer(serializers.ModelSerializer):
         fields = ['book', 'date', 'pages_read']
         read_only_fields = ['book']
 
-
-class RelatorioSerializer(serializers.Serializer):
-    """
-    Serializer para dados de relatório.
-    
-    Serializer genérico para validação de dados de relatório.
-    Atualmente utilizado para testes ou funcionalidades futuras.
-    
-    Fields:
-        a (int): Campo numérico A.
-        b (int): Campo numérico B.
-    """
-    a = serializers.IntegerField()
-    b = serializers.IntegerField()
