@@ -48,6 +48,15 @@ class BookViewSet(viewsets.ModelViewSet):
         """
         return self.book_repo.get_user_books(self.request.user)
 
+    def perform_create(self, serializer):
+        """
+        Cria um novo livro associando automaticamente ao usuário autenticado.
+
+        Returns:
+            None.
+        """
+        serializer.save(owner=self.request.user)
+
     @action(detail=True, methods=['post', 'get'])
     def progress(self, request, pk=None):
         """
